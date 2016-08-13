@@ -1,0 +1,2 @@
+defmodule Euchre do
+end
