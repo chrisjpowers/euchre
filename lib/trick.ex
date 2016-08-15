@@ -8,6 +8,12 @@ defmodule Euchre.Trick do
     end
   end
 
+  def lowest_card(cards, lead_suit, trump) do
+    Enum.min_by cards, fn (card) ->
+      get_value(card, lead_suit, trump)
+    end
+  end
+
   defp get_value(card, lead_suit, trump) do
     new_value = value_with_bauers(card, lead_suit, trump)
     Enum.find_index(@value_precedence, &(&1 == new_value))
