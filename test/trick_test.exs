@@ -63,10 +63,30 @@ defmodule TrickTest do
     assert result == {"clubs", "J"}
   end
 
+  test "right bauer beats left bauer" do
+    result = Trick.winner("clubs", [
+      {"spades", "9"},
+      {"spades", "J"},
+      {"clubs", "J"},
+      {"spades", "Q"}
+    ])
+    assert result == {"clubs", "J"}
+  end
+
   test "left bauer beats A of trump" do
     result = Trick.winner("clubs", [
       {"spades", "9"},
       {"clubs", "A"},
+      {"spades", "J"},
+      {"spades", "Q"}
+    ])
+    assert result == {"spades", "J"}
+  end
+
+  test "left bauer beats A of that suit" do
+    result = Trick.winner("clubs", [
+      {"spades", "9"},
+      {"spades", "A"},
       {"spades", "J"},
       {"spades", "Q"}
     ])

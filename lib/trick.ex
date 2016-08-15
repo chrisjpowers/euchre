@@ -1,33 +1,26 @@
 defmodule Euchre.Trick do
-  @non_trump_values ~w{9 10 J Q K A}
-  @trump_values ~w{9 10 Q K A LEFT RIGHT}
+  @value_precedence ~w{TOSS_OFF 9 10 J Q K A 9T 10T QT KT AT LEFT RIGHT}
 
   def winner(trump, cards) when length(cards) == 4 and is_nil(trump) == false do
     {lead_suit, _} = List.first(cards)
-    cards |>
-    follows_suit(lead_suit, trump) |>
-    Enum.max_by fn (card) -> get_value(card, trump) end
-  end
-
-  defp follows_suit(cards, lead_suit, trump_suit) do
-    Enum.filter cards, fn ({suit, value}) ->
-      suit == lead_suit || suit == trump_suit
+    Enum.max_by cards, fn (card) ->
+      get_value(card, lead_suit, trump)
     end
   end
 
-  defp get_value({suit, value}, trump) when suit != trump do
-    Enum.find_index @non_trump_values, &(&1 == value)
+  defp get_value(card, lead_suit, trump) do
+    new_value = value_with_bauers(card, lead_suit, trump)
+    Enum.find_index(@value_precedence, &(&1 == new_value))
   end
 
-  defp get_value({suit, value} = card, trump) when suit == trump do
-    new_value = value_with_bauers(card, trump)
-    Enum.find_index(@trump_values, &(&1 == new_value)) + 10
-  end
-
-  defp value_with_bauers({suit, value}, trump) do
-    case value do
-      "J" -> "RIGHT"
-      x -> x
+  defp value_with_bauers(card, lead_suit, trump) do
+    left = left_suit(trump)
+    case card do
+      {^trump, "J"} -> "RIGHT"
+      {^left, "J"} -> "LEFT"
+      {^trump, value} -> "#{value}T"
+      {^lead_suit, value}  -> value
+      {_, value}  -> "TOSS_OFF"
     end
   end
 
