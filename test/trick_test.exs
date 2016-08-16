@@ -89,4 +89,8 @@ defmodule TrickTest do
     ])
     assert result == {"spades", "J"}
   end
+
+  test "lowest_card returns lowest of the off suit cards" do
+    assert Trick.lowest_card([{"spades", "10"}, {"diamonds", "9"}], "hearts", "clubs") == {"diamonds", "9"}
+  end
 end

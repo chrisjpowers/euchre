@@ -1,5 +1,5 @@
 defmodule Euchre.Trick do
-  @value_precedence ~w{TOSS_OFF 9 10 J Q K A 9T 10T QT KT AT LEFT RIGHT}
+  @value_precedence ~w{9O 10O JO QO KO AO 9 10 J Q K A 9T 10T QT KT AT LEFT RIGHT}
 
   def winner(trump, cards) when is_list(cards) and is_nil(trump) == false do
     if length(cards) > 0 do
@@ -35,7 +35,7 @@ defmodule Euchre.Trick do
       {^left, "J"} -> "LEFT"
       {^trump, value} -> "#{value}T"
       {^lead_suit, value}  -> value
-      {_, value}  -> "TOSS_OFF"
+      {_, value}  -> "#{value}O"
     end
   end
 end

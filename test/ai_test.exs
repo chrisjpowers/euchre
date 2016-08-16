@@ -63,4 +63,30 @@ defmodule AiTest do
   test "do not trump your partner's good trick when partner lead is winning" do
     assert choose("c", ~w(Ah 10h), ~w(9d 9c Jd Ad Qd)) == "9d"
   end
+
+  # Leading a trick
+
+  test "lead with an off ace" do
+    assert choose("c", ~w(), ~w(9d 10d Jd Qd Ah)) == "Ah"
+  end
+
+  test "lead with off ace over left ace when possible" do
+    assert choose("c", ~w(), ~w(9d 10d Jd As Ah)) == "Ah"
+  end
+
+  test "lead with off ace with fewer cards in the suit" do
+    assert choose("c", ~w(), ~w(9d 10d Jd Ad Ah)) == "Ah"
+  end
+
+  test "lead with left ace over off ace with more cards in the suit" do
+    assert choose("c", ~w(), ~w(9h 10h Jd Ad As)) == "As"
+  end
+
+  test "lead with a singleton off suit if you have trump" do
+    assert choose("c", ~w(), ~w(9c 9d 10d Jd 9h)) == "9h"
+  end
+
+  test "lead with lowest off suit card if no singletons" do
+    assert choose("c", ~w(), ~w(Qs 9d 10d Jh Qh)) == "9d"
+  end
 end
