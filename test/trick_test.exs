@@ -10,13 +10,6 @@ defmodule TrickTest do
     {"diamonds", "9"}
   ]
 
-  test "winner throws with < 4 cards" do
-    too_few = Enum.take(@cards, 3)
-    assert_raise FunctionClauseError, fn () ->
-      Trick.winner("clubs", too_few)
-    end
-  end
-
   test "winner throws without a trump suit" do
     assert_raise FunctionClauseError, fn () ->
       Trick.winner(nil, @cards)
@@ -31,6 +24,10 @@ defmodule TrickTest do
       {"spades", "Q"}
     ])
     assert result == {"spades", "K"}
+  end
+  
+  test "returns nil if passed an empty array" do
+    assert Trick.winner("clubs", []) == nil
   end
 
   test "returns the highest card of the lead suit" do
