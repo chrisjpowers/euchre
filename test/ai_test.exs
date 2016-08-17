@@ -4,10 +4,11 @@ defmodule AiTest do
   alias Euchre.Ai
   alias Euchre.CardEncoding
 
-  def choose(trump_code, played_codes, hand_codes) do
+  def choose(trump_code, played_codes, hand_codes, on_offense \\ false) do
     played_cards = Enum.map played_codes, &CardEncoding.code_to_card/1
     hand = Enum.map hand_codes, &CardEncoding.code_to_card/1
-    result = Ai.choose_card(CardEncoding.code_to_suit(trump_code), played_cards, hand)
+    trump = CardEncoding.code_to_suit(trump_code)
+    result = Ai.choose_card(trump, played_cards, hand, on_offense)
     CardEncoding.card_to_code(result)
   end
 
@@ -75,5 +76,23 @@ defmodule AiTest do
 
   test "lead with lowest off suit card if no singletons" do
     assert choose("c", ~w(), ~w(Qs 9d 10d Jh Qh)) == "9d"
+  end
+
+  # When you are on offense
+
+  test "lead with the right bauer if you lead on offense" do
+    assert choose("c", ~w(), ~w(Ad Kd Qd Jd Jc), true) == "Jc"
+  end
+
+  test "lead with left bauer if you are on offense and have 3+ trump" do
+    assert choose("c", ~w(), ~w(Kc Ac Js 9d 9h), true) == "Js"
+  end
+
+  test "do not lead with left bauer if it is your only trump" do
+    assert choose("c", ~w(), ~w(9h Kh Ah Js 9d), true) == "Ah"
+  end
+
+  test "lead A trump if you have left bauer but right not played" do
+    assert choose("c", ~w(), ~w(9h Kh Ac Js 9d), true) == "Ac"
   end
 end
