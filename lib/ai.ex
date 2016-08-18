@@ -1,12 +1,14 @@
 defmodule Euchre.Ai do
   alias Euchre.Trick
 
-  def choose_card(trump, played_cards, hand, on_offense) do
+  def choose_card(trump, played_card_sets, hand, on_offense) do
+    [played_cards | past_sets] = Enum.reverse(played_card_sets)
     if length(played_cards) > 0 do
       {lead_suit, _} = List.first(played_cards)
     end
     rules = [
       &offense_lead_with_right_bauer/5,
+      &offense_lead_with_highest_remaining_trump/5,
       &offense_lead_with_high_trump_to_clear_bauers/5,
       &offense_lead_with_mid_trump_to_clear_right_bauer/5,
       &lead_with_off_ace/5,
@@ -19,7 +21,7 @@ defmodule Euchre.Ai do
     ]
     rules |>
       Enum.map(fn (rule) ->
-        rule.(trump, lead_suit, played_cards, hand, on_offense)
+        rule.(trump, lead_suit, played_card_sets, hand, on_offense)
       end) |>
       Enum.find &(&1)
   end
@@ -31,6 +33,20 @@ defmodule Euchre.Ai do
     end
   end
   defp offense_lead_with_right_bauer(_, _, _, _, _), do: nil
+
+  defp offense_lead_with_highest_remaining_trump(trump, _lead_suit=nil, played_sets, hand, _on_offense=true) do
+    played_cards = List.flatten played_sets
+    all_trumps = [
+      {trump, "J"}, left_bauer(trump), {trump, "A"}, {trump, "K"},
+      {trump, "Q"}, {trump, "10"}, {trump, "9"}
+    ]
+    remaining_trump = Enum.reject(all_trumps, fn (card) ->
+      Enum.find(played_cards, fn (c) -> c == card end)
+    end)
+    highest_remaining_trump = List.first remaining_trump
+    Enum.find hand, fn (card) -> card == highest_remaining_trump end
+  end
+  defp offense_lead_with_highest_remaining_trump(_,_,_,_,_), do: nil
 
   def offense_lead_with_high_trump_to_clear_bauers(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
     hand |>
@@ -81,7 +97,8 @@ defmodule Euchre.Ai do
     end
   end
 
-  defp play_winner_in_lead_suit(trump, lead_suit, played, hand, _) do
+  defp play_winner_in_lead_suit(trump, lead_suit, played_sets, hand, _) do
+    played = List.last(played_sets)
     cards_matching_suit(hand, trump, lead_suit) |>
     Enum.filter(fn (card) ->
       card == Trick.winner(trump, played ++ [card])
@@ -94,7 +111,8 @@ defmodule Euchre.Ai do
   end
 
   defp play_trump_card(_trump, nil, _played, _hand, _), do: nil
-  defp play_trump_card(trump, lead_suit, played, hand, _) do
+  defp play_trump_card(trump, lead_suit, played_sets, hand, _) do
+    played = List.last played_sets
     if !partner_winning?(trump, played) do
       trump_cards(hand, trump) |>
       lowest_card(lead_suit, trump)

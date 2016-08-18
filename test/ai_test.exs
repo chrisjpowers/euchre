@@ -5,7 +5,12 @@ defmodule AiTest do
   alias Euchre.CardEncoding
 
   def choose(trump_code, played_codes, hand_codes, on_offense \\ false) do
-    played_cards = Enum.map played_codes, &CardEncoding.code_to_card/1
+    if !is_list(List.first(played_codes)) do
+      played_codes = [played_codes]
+    end
+    played_cards = Enum.map played_codes, fn (set) ->
+      Enum.map set, &CardEncoding.code_to_card/1
+    end
     hand = Enum.map hand_codes, &CardEncoding.code_to_card/1
     trump = CardEncoding.code_to_suit(trump_code)
     result = Ai.choose_card(trump, played_cards, hand, on_offense)
@@ -94,5 +99,9 @@ defmodule AiTest do
 
   test "lead A trump if you have left bauer but right not played" do
     assert choose("c", ~w(), ~w(9h Kh Ac Js 9d), true) == "Ac"
+  end
+
+  test "lead the left if the right has been played" do
+    assert choose("c", [~w(Jc 9c 10c Qc), ~w()], ~w(9h Kh Js 9d), true) == "Js"
   end
 end
