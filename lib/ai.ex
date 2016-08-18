@@ -8,6 +8,7 @@ defmodule Euchre.Ai do
     end
     rules = [
       &offense_lead_with_right_bauer/5,
+      &offense_lead_with_ace_if_you_have_last_trump/5,
       &offense_lead_with_highest_remaining_trump/5,
       &offense_lead_with_high_trump_to_clear_bauers/5,
       &offense_lead_with_mid_trump_to_clear_right_bauer/5,
@@ -34,16 +35,20 @@ defmodule Euchre.Ai do
   end
   defp offense_lead_with_right_bauer(_, _, _, _, _), do: nil
 
+  defp offense_lead_with_ace_if_you_have_last_trump(trump, _lead_suit=nil, played_sets, hand, _on_offense=true) do
+    remaining = remaining_trump(trump, played_sets)
+    if Enum.sort(trump_cards(hand, trump)) == Enum.sort(remaining) do
+      non_trump_cards(hand, trump) |>
+      aces |>
+      blank_if(fn (as) -> length(as) == 0 end) |>
+      List.first
+    end
+  end
+  defp offense_lead_with_ace_if_you_have_last_trump(_, _, _, _, _), do: nil
+
   defp offense_lead_with_highest_remaining_trump(trump, _lead_suit=nil, played_sets, hand, _on_offense=true) do
-    played_cards = List.flatten played_sets
-    all_trumps = [
-      {trump, "J"}, left_bauer(trump), {trump, "A"}, {trump, "K"},
-      {trump, "Q"}, {trump, "10"}, {trump, "9"}
-    ]
-    remaining_trump = Enum.reject(all_trumps, fn (card) ->
-      Enum.find(played_cards, fn (c) -> c == card end)
-    end)
-    highest_remaining_trump = List.first remaining_trump
+    remaining = remaining_trump(trump, played_sets)
+    highest_remaining_trump = List.first remaining
     Enum.find hand, fn (card) -> card == highest_remaining_trump end
   end
   defp offense_lead_with_highest_remaining_trump(_,_,_,_,_), do: nil
@@ -188,5 +193,16 @@ defmodule Euchre.Ai do
 
   defp left_bauer(trump) do
     {Trick.left_suit(trump), "J"}
+  end
+
+  defp remaining_trump(trump, sets) do
+    played_cards = List.flatten sets
+    [
+      {trump, "J"}, left_bauer(trump), {trump, "A"}, {trump, "K"},
+      {trump, "Q"}, {trump, "10"}, {trump, "9"}
+    ] |>
+    Enum.reject(fn (card) ->
+      Enum.find(played_cards, fn (c) -> c == card end)
+    end)
   end
 end

@@ -101,7 +101,11 @@ defmodule AiTest do
     assert choose("c", ~w(), ~w(9h Kh Ac Js 9d), true) == "Ac"
   end
 
-  test "lead the left if the right has been played" do
+  test "lead the left bauer if the right bauer has been played" do
     assert choose("c", [~w(Jc 9c 10c Qc), ~w()], ~w(9h Kh Js 9d), true) == "Js"
+  end
+
+  test "lead an ace if you have the last trumps" do
+    assert choose("c", [~w(Jc 9c 10c Qc), ~w()], ~w(Kc Ac Js Ah), true) == "Ah"
   end
 end
