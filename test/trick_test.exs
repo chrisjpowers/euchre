@@ -26,6 +26,19 @@ defmodule TrickTest do
     CardEncoding.card_to_code(result)
   end
 
+  def play_trick(trump_code, hand_codes, lead_position, on_offense) do
+    trump = CardEncoding.code_to_suit(trump_code)
+    hands = Enum.map hand_codes, fn (hand) ->
+      Enum.map hand, &CardEncoding.code_to_card/1
+    end
+    {played, new_hands} = Trick.play_trick(trump, hands, lead_position, on_offense)
+    played_codes = Enum.map played, &CardEncoding.card_to_code/1
+    new_hand_codes = Enum.map new_hands, fn (hand) ->
+      Enum.map hand, &CardEncoding.card_to_code/1
+    end
+    {played_codes, new_hand_codes}
+  end
+
   test "winner throws without a trump suit" do
     assert_raise FunctionClauseError, fn () ->
       winner(nil, ~w(9s 9h 9c 9d))
@@ -73,5 +86,26 @@ defmodule TrickTest do
 
   test "lowest_card returns lowest of the off suit cards" do
     assert lowest_card(~w(10s 9d), "h", "c") == "9d"
+  end
+
+  # Playing a trick
+  test "collects a card from each player, returns them in order" do
+    result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], 0, false)
+    assert result == {~w(9c 10c Qc Kc), [[], [], [], []]}
+  end
+
+  test "it starts with the position" do
+    result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], 2, false)
+    assert result == {~w(Qc Kc 9c 10c), [[], [], [], []]}
+  end
+
+  test "returns remaining hands" do
+    result = play_trick("c", [~w(Ah 9c), ~w(9h 10c), ~w(10h Qc), ~w(Jh Kc)], 0, false)
+    assert result == {~w(Ah 9h 10h Jh), [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)]}
+  end
+
+  test "keeps hands in original order, regardless of lead position" do
+    result = play_trick("c", [~w(Ah 9c), ~w(9h 10c), ~w(10h Qc), ~w(Jh Kc)], 2, false)
+    assert result == {~w(10h Jh Ah 9h), [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)]}
   end
 end
