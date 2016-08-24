@@ -30,13 +30,13 @@ defmodule Euchre.Trick do
     Enum.find_index(@value_precedence, &(&1 == new_value))
   end
 
-  def play_trick(trump, hands, lead_position, on_offense) do
+  def play_trick(trump, hands, lead_position, on_offense, past_sets) do
     positions = (lead_position..(lead_position + 3))
     Enum.reduce(positions, {[], [nil, nil, nil, nil]}, fn (x, memo) ->
       {played_cards, remaining_hands} = memo
       pos = rem(x, 4)
       hand = Enum.at(hands, pos)
-      card = Ai.choose_card(trump, [played_cards], hand, on_offense)
+      card = Ai.choose_card(trump, past_sets ++ [played_cards], hand, on_offense)
       new_hand = Enum.reject hand, fn (c) -> card == c end
       new_remaining = List.replace_at remaining_hands, pos, new_hand
       {played_cards ++ [card], new_remaining}

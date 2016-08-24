@@ -4,7 +4,7 @@ defmodule Euchre.Ai do
   def choose_card(trump, played_card_sets, hand, on_offense) do
     [played_cards | past_sets] = Enum.reverse(played_card_sets)
     if length(played_cards) > 0 do
-      {lead_suit, _} = List.first(played_cards)
+      lead_suit = get_suit_considering_bauers(List.first(played_cards), trump)
     end
     rules = [
       &offense_lead_with_right_bauer/5,
@@ -188,6 +188,14 @@ defmodule Euchre.Ai do
       []
     else
       cards
+    end
+  end
+
+  defp get_suit_considering_bauers({suit, _}=card, trump) do
+    if card == left_bauer(trump) do
+      trump
+    else
+      suit
     end
   end
 

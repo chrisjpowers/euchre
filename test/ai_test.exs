@@ -57,6 +57,14 @@ defmodule AiTest do
     assert choose("c", ~w(Ah 10h), ~w(9d 9c Jd Ad Qd)) == "9d"
   end
 
+  test "play trump on your partner's good trick if you must follow suit" do
+    assert choose("c", ~w(Jc 9c), ~w(9d 10c Jd Ad Qd)) == "10c"
+  end
+
+  test "must follow suit when left bauer is lead and you're in 3rd position" do
+    assert choose("c", ~w(Js 9h), ~w(Qc 10h), false) == "Qc"
+  end
+
   # Leading a trick
 
   test "lead with an off ace" do
