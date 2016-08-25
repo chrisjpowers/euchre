@@ -4,7 +4,8 @@ defmodule Euchre.Ai do
   def choose_card(trump, played_card_sets, hand, on_offense) do
     [played_cards | past_sets] = Enum.reverse(played_card_sets)
     if length(played_cards) > 0 do
-      lead_suit = get_suit_considering_bauers(List.first(played_cards), trump)
+      leading_card = List.first(played_cards)
+      lead_suit = get_suit_considering_bauers(leading_card, trump)
     end
     rules = [
       &offense_lead_with_right_bauer/5,
@@ -62,7 +63,7 @@ defmodule Euchre.Ai do
   def offense_lead_with_high_trump_to_clear_bauers(_, _, _, _, _), do: nil
 
   def offense_lead_with_mid_trump_to_clear_right_bauer(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
-    left = {Trick.left_suit(trump), "J"}
+    left = left_bauer(trump)
     trumps = trump_cards(hand, trump)
     has_left = !!Enum.find_index(trumps, fn (card) -> card == left end)
     if length(trumps) > 1 && has_left do
@@ -129,8 +130,9 @@ defmodule Euchre.Ai do
   end
 
   defp cards_matching_suit(hand, trump, lead_suit) do
-    Enum.filter hand, fn ({suit, _value} = card) ->
-      suit == lead_suit || card_is_left_bauer(trump, card)
+    Enum.filter hand, fn (card) ->
+      suit = get_suit_considering_bauers(card, trump)
+      suit == lead_suit
     end
   end
 
@@ -149,13 +151,13 @@ defmodule Euchre.Ai do
 
   defp trump_cards(cards, trump) do
     Enum.filter cards, fn ({suit, _value} = card) ->
-      suit == trump || card == {Trick.left_suit(trump), "J"}
+      suit == trump || card == left_bauer(trump)
     end
   end
 
   defp non_trump_cards(cards, trump) do
     Enum.reject cards, fn ({suit, _value} = card) ->
-      suit == trump || card == {Trick.left_suit(trump), "J"}
+      suit == trump || card == left_bauer(trump)
     end
   end
 

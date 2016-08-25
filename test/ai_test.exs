@@ -37,6 +37,10 @@ defmodule AiTest do
     assert choose("h", ~w(9h 10h Jh), ~w(9d 10d Jd Ad Qd)) == "Jd"
   end
 
+  test "don't play left if you have lower trump" do
+    assert choose("c", ~w(9h 10h Jh), ~w(Jc Js Ac Kc 9c)) == "9c"
+  end
+
   test "trump with the sole trump card if in last position" do
     assert choose("s", ~w(9h 10h Jh), ~w(Ks 10d Jd Ad Qd)) == "Ks"
   end

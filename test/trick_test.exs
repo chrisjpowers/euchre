@@ -84,6 +84,10 @@ defmodule TrickTest do
     assert lowest_card(~w(10s 9d), "h", "c") == "9d"
   end
 
+  test "lowest_card knows left bauer is higher than other trump" do
+    assert lowest_card(~w(Qc Js), "h", "c") == "Qc"
+  end
+
   # Playing a trick
   test "collects a card from each player, returns them in order" do
     result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], 0, false)
