@@ -19,7 +19,7 @@ defmodule TrickTest do
     CardEncoding.card_to_code(result)
   end
 
-  def play_trick(trump_code, hand_codes, lead_position, on_offense, past_set_codes \\ []) do
+  def play_trick(trump_code, hand_codes, on_offense, past_set_codes \\ []) do
     trump = CardEncoding.code_to_suit(trump_code)
     hands = Enum.map hand_codes, fn (hand) ->
       Enum.map hand, &CardEncoding.code_to_card/1
@@ -27,7 +27,7 @@ defmodule TrickTest do
     past_sets = Enum.map past_set_codes, fn (codes) ->
       Enum.map codes, &CardEncoding.code_to_card/1
     end
-    {played, new_hands} = Trick.play_trick(trump, hands, lead_position, on_offense, past_sets)
+    {played, new_hands} = Trick.play_trick(trump, hands, on_offense, past_sets)
     played_codes = Enum.map played, &CardEncoding.card_to_code/1
     new_hand_codes = Enum.map new_hands, fn (hand) ->
       Enum.map hand, &CardEncoding.card_to_code/1
@@ -90,30 +90,20 @@ defmodule TrickTest do
 
   # Playing a trick
   test "collects a card from each player, returns them in order" do
-    result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], 0, false)
+    result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], false)
     assert result == {~w(9c 10c Qc Kc), [[], [], [], []]}
   end
 
-  test "it starts with the position" do
-    result = play_trick("c", [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)], 2, false)
-    assert result == {~w(Qc Kc 9c 10c), [[], [], [], []]}
-  end
-
   test "returns remaining hands" do
-    result = play_trick("c", [~w(Ah 9c), ~w(9h 10c), ~w(10h Qc), ~w(Jh Kc)], 0, false)
+    result = play_trick("c", [~w(Ah 9c), ~w(9h 10c), ~w(10h Qc), ~w(Jh Kc)], false)
     assert result == {~w(Ah 9h 10h Jh), [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)]}
-  end
-
-  test "keeps hands in original order, regardless of lead position" do
-    result = play_trick("c", [~w(Ah 9c), ~w(9h 10c), ~w(10h Qc), ~w(Jh Kc)], 2, false)
-    assert result == {~w(10h Jh Ah 9h), [~w(9c), ~w(10c), ~w(Qc), ~w(Kc)]}
   end
 
   test "takes a list of past sets of played cards" do
     # Because the Right Bauer was played on the first trick,
     # first position should lead with the Left Bauer (rather than
     # the off Ace). Without knowing past cards, they would lead Ace
-    result = play_trick("c", [~w(Ah Js), ~w(9h 10d), ~w(Qc 10h), ~w(Jh Kc)], 0, true, [~w(Jc 9c 10c Ac)])
+    result = play_trick("c", [~w(Ah Js), ~w(9h 10d), ~w(Qc 10h), ~w(Jh Kc)], true, [~w(Jc 9c 10c Ac)])
     assert result == {~w(Js 9h Qc Kc), [~w(Ah), ~w(10d), ~w(10h), ~w(Jh)]}
   end
 end
