@@ -5,8 +5,10 @@ defmodule AiTest do
   alias Euchre.CardEncoding
 
   def choose(trump_code, played_codes, hand_codes, on_offense \\ false) do
-    if !is_list(List.first(played_codes)) do
-      played_codes = [played_codes]
+    played_codes = if !is_list(List.first(played_codes)) do
+      [played_codes]
+    else
+      played_codes
     end
     played_cards = Enum.map played_codes, fn (set) ->
       Enum.map set, &CardEncoding.code_to_card/1

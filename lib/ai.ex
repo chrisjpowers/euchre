@@ -2,10 +2,12 @@ defmodule Euchre.Ai do
   alias Euchre.Trick
 
   def choose_card(trump, played_card_sets, hand, on_offense) do
-    [played_cards | past_sets] = Enum.reverse(played_card_sets)
-    if length(played_cards) > 0 do
-      leading_card = List.first(played_cards)
-      lead_suit = get_suit_considering_bauers(leading_card, trump)
+    [played_cards | _past_sets] = Enum.reverse(played_card_sets)
+    leading_card = if length(played_cards) > 0 do
+      List.first(played_cards)
+    end
+    lead_suit = if leading_card do
+      get_suit_considering_bauers(leading_card, trump)
     end
     rules = [
       &offense_lead_with_right_bauer/5,
@@ -25,7 +27,7 @@ defmodule Euchre.Ai do
       Enum.map(fn (rule) ->
         rule.(trump, lead_suit, played_card_sets, hand, on_offense)
       end) |>
-      Enum.find &(&1)
+      Enum.find(&(&1))
   end
 
   defp offense_lead_with_right_bauer(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
@@ -134,10 +136,6 @@ defmodule Euchre.Ai do
       suit = get_suit_considering_bauers(card, trump)
       suit == lead_suit
     end
-  end
-
-  defp card_is_left_bauer(trump, card) do
-    left_bauer(trump) == card
   end
 
   defp partner_winning?(trump, cards) do
