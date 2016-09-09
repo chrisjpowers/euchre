@@ -9,16 +9,8 @@ defmodule DeckTest do
   end
 
   test "shuffles a deck" do
-    deck = Deck.generate()
-    shuffled = Deck.shuffle(deck)
-    assert length(deck) == length(shuffled)
-    assert shuffled != deck
-  end
-
-  test "deals a card" do
-    deck = [{"hearts", "9"}, {"spades", "9"}]
-    {dealt_card, new_deck} = Deck.deal(deck)
-    assert dealt_card == {"hearts", "9"}
-    assert new_deck == [{"spades", "9"}]
+    deck1 = Deck.generate()
+    deck2 = Deck.generate()
+    assert deck1 != deck2
   end
 end

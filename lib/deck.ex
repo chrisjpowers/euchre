@@ -3,20 +3,16 @@ defmodule Euchre.Deck do
   @suits ~w(clubs spades diamonds hearts)
 
   def generate do
-    Enum.reduce @suits, [], fn (suit, cards) ->
-      new_cards = Enum.map @faces, fn (face) ->
-        {face, suit}
-      end
-      cards ++ new_cards
+    generate(@suits, []) |>
+    Enum.shuffle
+  end
+
+  defp generate([suit | suits_left], deck) do
+    new_cards = Enum.map @faces, fn (face) ->
+      {face, suit}
     end
+    generate(suits_left, deck ++ new_cards)
   end
 
-  def shuffle(deck) do
-    Enum.shuffle deck
-  end
-
-  def deal(deck) do
-    [first_card | rest] = deck
-    {first_card, rest}
-  end
+  defp generate([], deck), do: deck
 end
