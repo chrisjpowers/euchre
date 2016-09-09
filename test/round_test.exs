@@ -23,6 +23,6 @@ defmodule RoundTest do
 
   test "plays a hand where partner takes all the tricks" do
     result = play_hand("c", [~w(Ad Kd Qd Jd 10d), ~w(Ah Kh Qh Jh 10h), ~w(Jc Js Ac Kc Qc), ~w(As Ks Qs 10s 9s)], 0)
-    assert result == [~w(Ad 10h Qc 9s), ~w(Jc 10s 10d Jh), ~w(Js Qs Jd Qh), ~w(Ac Ks Qd Kh), ~w(Kc As Kd Ah)]
+    assert result == [~w(Ad 10h Qc 9s), ~w(10d Jh Jc 10s), ~w(Jd Qh Js Qs), ~w(Qd Kh Ac Ks), ~w(Kd Ah Kc As)]
   end
 end
