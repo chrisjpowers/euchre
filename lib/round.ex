@@ -7,26 +7,42 @@ defmodule Euchre.Round do
 
   defp play_hand(_, [[],[],[],[]], _, _, sets), do: sets
   defp play_hand(trump, hands, lead_position, on_offense, sets) do
+    {set, remaining_hands} = play_trick(trump, hands, lead_position, on_offense, sets)
+    new_lead_pos = winning_pos(trump, set)
+    new_on_offense = winning_pos_on_offense(new_lead_pos, lead_position, on_offense)
+    play_hand(trump, remaining_hands, new_lead_pos, new_on_offense, sets ++ [set])
+  end
+
+  # Wraps `Trick.play_trick` to handle shifting the hands based
+  # on the lead position, since `Trick.play_trick` assumes that
+  # the hand in the first index is the hand that will lead the trick.
+  # This then unshifts the resulting output so that `Round` can
+  # deal with the hands in absolute order.
+  defp play_trick(trump, hands, lead_position, on_offense, sets) do
     offset_hands = add_offset(hands, lead_position)
     {offset_set, off_new_rem_hands} = Trick.play_trick(trump, offset_hands, on_offense, sets)
     new_rem_hands = remove_offset(off_new_rem_hands, lead_position)
     set = remove_offset(offset_set, lead_position)
-    new_lead_pos = winning_pos(trump, set)
-    new_on_offense = winning_pos_on_offense(new_lead_pos, lead_position, on_offense)
-    play_hand(trump, new_rem_hands, new_lead_pos, new_on_offense, sets ++ [set])
+    {set, new_rem_hands}
   end
 
+  @doc """
+  Given the trump and an array of sets (played tricks),
+  this returns the number of points each team receives as a tuple,
+  i.e. `{1, 0}` is one point for Team 1, `{0, 2}` is two points
+  for Team 2.
+  """
   def score(trump, sets) do
     score(trump, sets, 0, 0, 0)
   end
 
-  def score(_, [], _, 3, _), do: {1, 0}
-  def score(_, [], _, 4, _), do: {1, 0}
-  def score(_, [], _, 5, _), do: {2, 0}
-  def score(_, [], _, _, 3), do: {0, 1}
-  def score(_, [], _, _, 4), do: {0, 1}
-  def score(_, [], _, _, 5), do: {0, 2}
-  def score(trump, [set | sets], pos, team1_points, team2_points) do
+  defp score(_, [], _, 3, _), do: {1, 0}
+  defp score(_, [], _, 4, _), do: {1, 0}
+  defp score(_, [], _, 5, _), do: {2, 0}
+  defp score(_, [], _, _, 3), do: {0, 1}
+  defp score(_, [], _, _, 4), do: {0, 1}
+  defp score(_, [], _, _, 5), do: {0, 2}
+  defp score(trump, [set | sets], pos, team1_points, team2_points) do
     ordered_set = add_offset(set, pos)
     wp = winning_pos(trump, ordered_set)
     case rem(wp + pos, 4) do
