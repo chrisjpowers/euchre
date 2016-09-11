@@ -1,7 +1,7 @@
-defmodule AiTest do
+defmodule AiChooseCardTest do
   use ExUnit.Case
 
-  alias Euchre.Ai
+  alias Euchre.Ai.ChooseCard
   alias Euchre.CardEncoding
 
   def choose(trump_code, played_codes, hand_codes, on_offense \\ false) do
@@ -15,7 +15,7 @@ defmodule AiTest do
     end
     hand = Enum.map hand_codes, &CardEncoding.code_to_card/1
     trump = CardEncoding.code_to_suit(trump_code)
-    result = Ai.choose_card(trump, played_cards, hand, on_offense)
+    result = ChooseCard.choose_card(trump, played_cards, hand, on_offense)
     CardEncoding.card_to_code(result)
   end
 

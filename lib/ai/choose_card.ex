@@ -1,4 +1,4 @@
-defmodule Euchre.Ai do
+defmodule Euchre.Ai.ChooseCard do
   alias Euchre.Trick
 
   def choose_card(trump, played_card_sets, hand, on_offense) do

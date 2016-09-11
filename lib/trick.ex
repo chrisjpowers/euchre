@@ -1,5 +1,5 @@
 defmodule Euchre.Trick do
-  alias Euchre.Ai
+  alias Euchre.Ai.ChooseCard
 
   @value_precedence ~w{9O 10O JO QO KO AO 9 10 J Q K A 9T 10T QT KT AT LEFT RIGHT}
 
@@ -35,7 +35,7 @@ defmodule Euchre.Trick do
       {played_cards, remaining_hands} = memo
       pos = rem(x, 4)
       hand = Enum.at(hands, pos)
-      card = Ai.choose_card(trump, past_sets ++ [played_cards], hand, on_offense)
+      card = ChooseCard.choose_card(trump, past_sets ++ [played_cards], hand, on_offense)
       new_hand = Enum.reject hand, fn (c) -> card == c end
       new_remaining = List.replace_at remaining_hands, pos, new_hand
       {played_cards ++ [card], new_remaining}
