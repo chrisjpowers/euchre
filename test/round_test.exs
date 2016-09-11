@@ -75,4 +75,14 @@ defmodule RoundTest do
     result = score("c", winners ++ losers)
     assert result == {0, 2}
   end
+
+  test "deals hands and remaining cards" do
+    {[h1, h2, h3, h4], rem} = Round.deal_hands
+    assert length(h1) == 5
+    assert length(h2) == 5
+    assert length(h3) == 5
+    assert length(h4) == 5
+    assert length(rem) == 4
+    assert length(Enum.uniq(h1 ++ h2 ++ h3 ++ h4 ++ rem)) == 24
+  end
 end

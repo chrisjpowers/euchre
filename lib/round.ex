@@ -1,5 +1,6 @@
 defmodule Euchre.Round do
   alias Euchre.Trick
+  alias Euchre.Deck
 
   def play_hand(trump, hands, lead_position) do
     play_hand(trump, hands, lead_position, true, [])
@@ -51,6 +52,14 @@ defmodule Euchre.Round do
       2 -> score(trump, sets, 2, team1_points + 1, team2_points)
       3 -> score(trump, sets, 3, team1_points, team2_points + 1)
     end
+  end
+
+  def deal_hands do
+    deck = Deck.generate()
+    hands_and_rem = Enum.chunk(deck, 5, 5, [])
+    hands = Enum.slice(hands_and_rem, 0, 4)
+    rem = List.last hands_and_rem
+    {hands, rem}
   end
 
   defp add_offset(hands, 0), do: hands
