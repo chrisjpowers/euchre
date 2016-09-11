@@ -16,6 +16,27 @@ defmodule Euchre.Round do
     play_hand(trump, new_rem_hands, new_lead_pos, new_on_offense, sets ++ [set])
   end
 
+  def score(trump, sets) do
+    score(trump, sets, 0, 0, 0)
+  end
+
+  def score(_, [], _, 3, _), do: {1, 0}
+  def score(_, [], _, 4, _), do: {1, 0}
+  def score(_, [], _, 5, _), do: {2, 0}
+  def score(_, [], _, _, 3), do: {0, 1}
+  def score(_, [], _, _, 4), do: {0, 1}
+  def score(_, [], _, _, 5), do: {0, 2}
+  def score(trump, [set | sets], pos, team1_points, team2_points) do
+    ordered_set = add_offset(set, pos)
+    wp = winning_pos(trump, ordered_set)
+    case rem(wp + pos, 4) do
+      0 -> score(trump, sets, 0, team1_points + 1, team2_points)
+      1 -> score(trump, sets, 1, team1_points, team2_points + 1)
+      2 -> score(trump, sets, 2, team1_points + 1, team2_points)
+      3 -> score(trump, sets, 3, team1_points, team2_points + 1)
+    end
+  end
+
   defp add_offset(hands, 0), do: hands
   defp add_offset([first_hand | hands], lead_position) do
     add_offset(hands ++ [first_hand], lead_position - 1)
