@@ -7,6 +7,7 @@ defmodule Euchre.Ai.Bid do
     dealer_picks_up_bauer |>
     pick_with_both_bauers |>
     pick_with_right_and_two_littles |>
+    pick_with_left_little_ace |>
     just_pass
   end
 
@@ -22,12 +23,22 @@ defmodule Euchre.Ai.Bid do
     if length(bauers) == 2 do %{result: :pick_up} else data end
   end
 
-  defp pick_with_right_and_two_littles(res=%{result: _}), do: res
+  defp pick_with_right_and_two_littles(res = %{result: _}), do: res
   defp pick_with_right_and_two_littles(data = %{hand: hand, suit: suit}) do
     hand |>
     CardFilters.trump_cards(suit) |>
-    CardFilters.has_right_trump(suit) |>
+    CardFilters.has_right_bauer(suit) |>
     CardFilters.length_greater_than(2) |>
+    CardFilters.if_present(%{result: :pick_up}, data)
+  end
+
+  defp pick_with_left_little_ace(res = %{result: _}), do: res
+  defp pick_with_left_little_ace(data = %{hand: hand, suit: suit}) do
+    hand |>
+    CardFilters.has_bauer(suit) |>
+    CardFilters.has_off_ace(suit) |>
+    CardFilters.trump_cards(suit) |>
+    CardFilters.length_greater_than(1) |>
     CardFilters.if_present(%{result: :pick_up}, data)
   end
 

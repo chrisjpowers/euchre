@@ -55,4 +55,8 @@ defmodule AiBidTest do
   test "pick up with the right and two littles" do
     pick_up_with(~w(Jc 9c 10c 9s 9d), "Kc", 0)
   end
+
+  test "pick up with a bauer, a little, and an ace" do
+    pick_up_with(~w(Js 9c Ad 9s 9d), "Kc", 0)
+  end
 end

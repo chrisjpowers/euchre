@@ -84,11 +84,18 @@ defmodule Euchre.CardFilters do
     end)
   end
 
-  def has_right_trump(cards, suit) do
+  def has_right_bauer(cards, suit) do
     has_right = Enum.any? cards, fn(card) ->
       card == {suit, "J"}
     end
     if has_right do cards else [] end
+  end
+
+  def has_bauer(cards, suit) do
+    has_bauer = Enum.any? cards, fn(card) ->
+      card == {suit, "J"} || card == left_bauer(suit)
+    end
+    if has_bauer do cards else [] end
   end
 
   def length_greater_than(cards, num) do
@@ -97,5 +104,13 @@ defmodule Euchre.CardFilters do
 
   def if_present(cards, true_val, false_val) do
     if length(cards) > 0 do true_val else false_val end
+  end
+
+  def has_off_ace(cards, suit) do
+    cards |>
+    non_trump_cards(suit) |>
+    aces |>
+    length_greater_than(0) |>
+    if_present(cards, [])
   end
 end
