@@ -83,4 +83,19 @@ defmodule Euchre.CardFilters do
       Enum.find(played_cards, fn (c) -> c == card end)
     end)
   end
+
+  def has_right_trump(cards, suit) do
+    has_right = Enum.any? cards, fn(card) ->
+      card == {suit, "J"}
+    end
+    if has_right do cards else [] end
+  end
+
+  def length_greater_than(cards, num) do
+    if length(cards) > num do cards else [] end
+  end
+
+  def if_present(cards, true_val, false_val) do
+    if length(cards) > 0 do true_val else false_val end
+  end
 end

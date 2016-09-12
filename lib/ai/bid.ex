@@ -24,15 +24,11 @@ defmodule Euchre.Ai.Bid do
 
   defp pick_with_right_and_two_littles(res=%{result: _}), do: res
   defp pick_with_right_and_two_littles(data = %{hand: hand, suit: suit}) do
-    trumps = CardFilters.trump_cards(hand, suit)
-    has_right = Enum.any?(trumps, fn(card) ->
-      card == {suit, "J"}
-    end)
-    if length(trumps) > 2 && has_right do
-      %{result: :pick_up}
-    else
-      data
-    end
+    hand |>
+    CardFilters.trump_cards(suit) |>
+    CardFilters.has_right_trump(suit) |>
+    CardFilters.length_greater_than(2) |>
+    CardFilters.if_present(%{result: :pick_up}, data)
   end
 
   defp just_pass(%{result: result}), do: result
