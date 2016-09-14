@@ -69,6 +69,10 @@ defmodule Euchre.CardFilters do
     end
   end
 
+  def right_bauer(trump) do
+    {trump, "J"}
+  end
+
   def left_bauer(trump) do
     {Trick.left_suit(trump), "J"}
   end
@@ -85,10 +89,13 @@ defmodule Euchre.CardFilters do
   end
 
   def has_right_bauer(cards, suit) do
-    has_right = Enum.any? cards, fn(card) ->
-      card == {suit, "J"}
-    end
+    has_right = Enum.any?(cards, &(&1 == right_bauer(suit)))
     if has_right do cards else [] end
+  end
+
+  def has_left_bauer(cards, suit) do
+    has_left = Enum.any?(cards, &(&1 == left_bauer(suit)))
+    if has_left do cards else [] end
   end
 
   def has_bauer(cards, suit) do
@@ -107,10 +114,10 @@ defmodule Euchre.CardFilters do
   end
 
   def has_off_ace(cards, suit) do
-    cards |>
-    non_trump_cards(suit) |>
-    aces |>
-    length_greater_than(0) |>
-    if_present(cards, [])
+    cards
+    |> non_trump_cards(suit)
+    |> aces
+    |> length_greater_than(0)
+    |> if_present(cards, [])
   end
 end
