@@ -8,6 +8,7 @@ defmodule Euchre.Ai.Bid do
     pick_with_both_bauers |>
     pick_with_right_and_two_littles |>
     pick_with_left_little_ace |>
+    pick_with_many_littles |>
     just_pass
   end
 
@@ -39,6 +40,14 @@ defmodule Euchre.Ai.Bid do
     CardFilters.has_off_ace(suit) |>
     CardFilters.trump_cards(suit) |>
     CardFilters.length_greater_than(1) |>
+    CardFilters.if_present(%{result: :pick_up}, data)
+  end
+
+  defp pick_with_many_littles(res = %{result: _}), do: res
+  defp pick_with_many_littles(data = %{hand: hand, suit: suit}) do
+    hand |>
+    CardFilters.trump_cards(suit) |>
+    CardFilters.length_greater_than(3) |>
     CardFilters.if_present(%{result: :pick_up}, data)
   end
 
