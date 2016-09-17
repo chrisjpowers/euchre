@@ -113,6 +113,10 @@ defmodule Euchre.CardFilters do
     if length(cards) > 0 do true_val else false_val end
   end
 
+  def is_present?(cards) do
+    cards && length(cards) > 0
+  end
+
   def has_off_ace(cards, suit) do
     cards
     |> non_trump_cards(suit)
