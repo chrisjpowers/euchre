@@ -1,5 +1,6 @@
 defmodule Euchre.Ai.Bid do
   alias Euchre.CardFilters
+  alias Euchre.Deck
 
   def pick_up(hand, {suit, face}, position) when length(hand) == 5 and is_integer(position) do
     %{hand: hand, suit: suit, face: face, position: position}
@@ -10,6 +11,18 @@ defmodule Euchre.Ai.Bid do
     |> pick_with_many_littles
     |> just_pass
     |> Map.get(:result)
+  end
+
+  def choose_suit(hand, position) do
+    choose_suit(hand, position, Deck.suits)
+  end
+
+  defp choose_suit(_hand, _position, []), do: :pass
+  defp choose_suit(hand, position, [suit | suits]) do
+    case pick_up(hand, {suit, "9"}, position) do
+      :pick_up -> suit
+      :pass -> choose_suit(hand, position, suits)
+    end
   end
 
   defp dealer_picks_up_bauer(res = %{result: _}), do: res

@@ -18,6 +18,11 @@ defmodule AiBidTest do
     assert pick_up(hand_codes, face_up_code, position) == :pass
   end
 
+  def choose_suit(hand_codes, position) do
+    hand = Enum.map hand_codes, &CardEncoding.code_to_card/1
+    Bid.choose_suit(hand, position)
+  end
+
   test "it throws unless given five cards as a hand" do
     assert_raise FunctionClauseError, fn ->
       pick_up([], "9d", 0)
@@ -62,5 +67,25 @@ defmodule AiBidTest do
 
   test "pick up with four trump" do
     pick_up_with(~w(9c 10c Qc Kc 9d), "Ac", 0)
+  end
+
+  test "choose suit if both bauers" do
+    assert choose_suit(~w(Js Jc 9d 9h 9c), 0) == "clubs"
+  end
+
+  test "choose suit with the right and two littles" do
+    assert choose_suit(~w(Jc 9c 10c 9s 9d), 0) == "clubs"
+  end
+
+  test "choose suit with a bauer, a little, and an ace" do
+    assert choose_suit(~w(Js 9c Ad 9s 9d), 0) == "clubs"
+  end
+
+  test "choose suit with four trump" do
+    assert choose_suit(~w(9c 10c Qc Kc 9d), 0) == "clubs"
+  end
+
+  test "pass on a bad hand" do
+    assert choose_suit(~w(9c 9d 9h 9s 10s), 0) == :pass
   end
 end
