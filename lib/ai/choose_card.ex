@@ -10,36 +10,36 @@ defmodule Euchre.Ai.ChooseCard do
     lead_suit = if leading_card do
       get_suit_considering_bauers(leading_card, trump)
     end
-    rules = [
-      &offense_lead_with_right_bauer/5,
-      &offense_lead_with_ace_if_you_have_last_trump/5,
-      &offense_lead_with_highest_remaining_trump/5,
-      &offense_lead_with_high_trump_to_clear_bauers/5,
-      &offense_lead_with_mid_trump_to_clear_right_bauer/5,
-      &lead_with_off_ace/5,
-      &lead_with_singleton_off_suit/5,
-      &lead_with_lowest_off_suit/5,
-      &play_winner_in_lead_suit/5,
-      &throw_off_lowest_card_in_lead_suit/5,
-      &play_trump_card/5,
-      &throw_off_lowest_offsuit_card/5
-    ]
-    rules |>
-      Enum.map(fn (rule) ->
-        rule.(trump, lead_suit, played_card_sets, hand, on_offense)
-      end) |>
-      Enum.find(&(&1))
+    d = %{
+      trump: trump,
+      suit: lead_suit,
+      sets: played_card_sets,
+      hand: hand,
+      on_offense: on_offense
+    }
+    offense_lead_with_right_bauer(d)
+    || offense_lead_with_ace_if_you_have_last_trump(d)
+    || offense_lead_with_highest_remaining_trump(d)
+    || offense_lead_with_high_trump_to_clear_bauers(d)
+    || offense_lead_with_mid_trump_to_clear_right_bauer(d)
+    || lead_with_off_ace(d)
+    || lead_with_singleton_off_suit(d)
+    || lead_with_lowest_off_suit(d)
+    || play_winner_in_lead_suit(d)
+    || throw_off_lowest_card_in_lead_suit(d)
+    || play_trump_card(d)
+    || throw_off_lowest_offsuit_card(d)
   end
 
-  defp offense_lead_with_right_bauer(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
+  defp offense_lead_with_right_bauer(%{trump: trump, hand: hand, suit: nil, on_offense: true}) do
     right_bauer = {trump, "J"}
     if Enum.any?(hand, &(&1 == right_bauer)) do
       right_bauer
     end
   end
-  defp offense_lead_with_right_bauer(_, _, _, _, _), do: nil
+  defp offense_lead_with_right_bauer(_), do: nil
 
-  defp offense_lead_with_ace_if_you_have_last_trump(trump, _lead_suit=nil, played_sets, hand, _on_offense=true) do
+  defp offense_lead_with_ace_if_you_have_last_trump(%{trump: trump, hand: hand, suit: nil, sets: played_sets, on_offense: true}) do
     remaining = remaining_trump(trump, played_sets)
     if Enum.sort(trump_cards(hand, trump)) == Enum.sort(remaining) do
       non_trump_cards(hand, trump) |>
@@ -48,24 +48,24 @@ defmodule Euchre.Ai.ChooseCard do
       List.first
     end
   end
-  defp offense_lead_with_ace_if_you_have_last_trump(_, _, _, _, _), do: nil
+  defp offense_lead_with_ace_if_you_have_last_trump(_), do: nil
 
-  defp offense_lead_with_highest_remaining_trump(trump, _lead_suit=nil, played_sets, hand, _on_offense=true) do
+  defp offense_lead_with_highest_remaining_trump(%{trump: trump, hand: hand, suit: nil, on_offense: true, sets: played_sets}) do
     remaining = remaining_trump(trump, played_sets)
     highest_remaining_trump = List.first remaining
     Enum.find hand, fn (card) -> card == highest_remaining_trump end
   end
-  defp offense_lead_with_highest_remaining_trump(_,_,_,_,_), do: nil
+  defp offense_lead_with_highest_remaining_trump(_), do: nil
 
-  def offense_lead_with_high_trump_to_clear_bauers(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
+  def offense_lead_with_high_trump_to_clear_bauers(%{trump: trump, hand: hand, suit: nil, on_offense: true}) do
     hand |>
     trump_cards(trump) |>
     blank_if(fn (cards) -> length(cards) < 3 end) |>
     highest_card(nil, trump)
   end
-  def offense_lead_with_high_trump_to_clear_bauers(_, _, _, _, _), do: nil
+  def offense_lead_with_high_trump_to_clear_bauers(_), do: nil
 
-  def offense_lead_with_mid_trump_to_clear_right_bauer(trump, _lead_suit=nil, _played, hand, _on_offense=true) do
+  def offense_lead_with_mid_trump_to_clear_right_bauer(%{trump: trump, hand: hand, suit: nil, on_offense: true}) do
     left = left_bauer(trump)
     trumps = trump_cards(hand, trump)
     has_left = !!Enum.find_index(trumps, fn (card) -> card == left end)
@@ -75,9 +75,9 @@ defmodule Euchre.Ai.ChooseCard do
       highest_card(nil, trump)
     end
   end
-  def offense_lead_with_mid_trump_to_clear_right_bauer(_, _, _, _, _), do: nil
+  def offense_lead_with_mid_trump_to_clear_right_bauer(_), do: nil
 
-  defp lead_with_off_ace(trump, nil, _played, hand, _) do
+  defp lead_with_off_ace(%{trump: trump, hand: hand, suit: nil}) do
     non_trump_cards(hand, trump) |>
     aces |>
     Enum.sort_by(fn ({suit, _value}) ->
@@ -91,22 +91,21 @@ defmodule Euchre.Ai.ChooseCard do
     end) |>
     List.first
   end
-  defp lead_with_off_ace(_, _, _, _, _), do: nil
+  defp lead_with_off_ace(_), do: nil
 
-  defp lead_with_singleton_off_suit(trump, nil, _played, hand, _) do
+  defp lead_with_singleton_off_suit(%{trump: trump, suit: nil, hand: hand}) do
     if length(trump_cards(hand, trump)) > 0 do
       hand |> non_trump_cards(trump) |> singletons |> List.first
     end
   end
-  defp lead_with_singleton_off_suit(_, _, _, _, _), do: nil
+  defp lead_with_singleton_off_suit(_), do: nil
 
-  defp lead_with_lowest_off_suit(trump, lead_suit, _played, hand, _) do
-    if !lead_suit do
-      hand |> non_trump_cards(trump) |> lowest_card(nil, trump)
-    end
+  defp lead_with_lowest_off_suit(%{trump: trump, suit: nil, hand: hand}) do
+    hand |> non_trump_cards(trump) |> lowest_card(nil, trump)
   end
+  defp lead_with_lowest_off_suit(_), do: nil
 
-  defp play_winner_in_lead_suit(trump, lead_suit, played_sets, hand, _) do
+  defp play_winner_in_lead_suit(%{trump: trump, suit: lead_suit, sets: played_sets, hand: hand}) do
     played = List.last(played_sets)
     cards_matching_suit(hand, trump, lead_suit) |>
     Enum.filter(fn (card) ->
@@ -115,20 +114,20 @@ defmodule Euchre.Ai.ChooseCard do
     Trick.lowest_card(lead_suit, trump) 
   end
 
-  defp throw_off_lowest_card_in_lead_suit(trump, lead_suit, _played, hand, _) do
+  defp throw_off_lowest_card_in_lead_suit(%{trump: trump, suit: lead_suit, hand: hand}) do
     cards_matching_suit(hand, trump, lead_suit) |> List.first
   end
 
-  defp play_trump_card(_trump, nil, _played, _hand, _), do: nil
-  defp play_trump_card(trump, lead_suit, played_sets, hand, _) do
+  defp play_trump_card(%{trump: trump, suit: lead_suit, sets: played_sets, hand: hand}) when not is_nil(lead_suit) do
     played = List.last played_sets
     if !partner_winning?(trump, played) do
       trump_cards(hand, trump) |>
       lowest_card(lead_suit, trump)
     end
   end
+  defp play_trump_card(_), do: nil
 
-  defp throw_off_lowest_offsuit_card(trump, lead_suit, _played, hand, _) do
+  defp throw_off_lowest_offsuit_card(%{trump: trump, suit: lead_suit, hand: hand}) do
     Trick.lowest_card(hand, lead_suit, trump)
   end
 end
