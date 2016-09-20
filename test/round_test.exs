@@ -121,9 +121,9 @@ defmodule RoundTest do
     hands = [hand3, ~w(10h Qh Kh Ah Js), hand1, hand2] 
 
     {new_hands, position} = bid_pick_up(hands, flipped_up_card, 2)
-    assert position == 1 # dealer picked
     # Js was discarded, Jh added
     assert new_hands == [hand3, ~w(10h Qh Kh Ah Jh), hand1, hand2]
+    assert position == 1 # dealer picked
   end
 
   test "pick_up bidding returns orig hands and nil bid position if no one bids" do

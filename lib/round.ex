@@ -5,21 +5,36 @@ defmodule Euchre.Round do
   alias Euchre.Ai.DiscardToPickUp
 
   def bid_pick_up(hands, card, position) do
-    dealer_pos = 3
-    offset_hands = add_offset(hands, position)
-    bid_pos = Enum.find_index offset_hands, fn (hand) ->
-      res = Bid.pick_up(hand, card, position)
-      res == :pick_up
+    bid_pos = get_bidder_position(hands, card, position)
+    discard_and_pick_up(hands, card, position, bid_pos)
+  end
+
+  defp discard_and_pick_up(hands, _card, _position, nil), do: {hands, nil}
+  defp discard_and_pick_up(hands, card, position, bid_pos) do
+    dealer_pos = rem(3 + position, 4)
+    hands_with_pick_up = List.update_at hands, dealer_pos, fn (_) ->
+      DiscardToPickUp.replace_card(Enum.at(hands, dealer_pos), card)
     end
-    if bid_pos do
-      hands_with_pick_up = List.update_at offset_hands, dealer_pos, fn (_) ->
-        DiscardToPickUp.replace_card(Enum.at(offset_hands, dealer_pos), card)
-      end
-      no_offset_bid_pos = rem(4 - position + bid_pos, 4)
-      {remove_offset(hands_with_pick_up, position), no_offset_bid_pos}
+    {hands_with_pick_up, bid_pos}
+  end
+
+  defp get_bidder_position(hands, card, position) do
+    offset_hands = add_offset(hands, position)
+    offset_index = try_bid_at_position(offset_hands, card, 0)
+    if offset_index do
+      rem(4 - position + offset_index, 4)
     else
-      # No one bid on the hand
-      {hands, nil}
+      nil
+    end
+  end
+
+  defp try_bid_at_position([], _card, _position), do: nil
+  defp try_bid_at_position([hand | hands], card, position) do
+    res = Bid.pick_up(hand, card, position)
+    if res == :pick_up do
+      position
+    else
+      try_bid_at_position(hands, card, position + 1)
     end
   end
 
