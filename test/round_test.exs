@@ -24,6 +24,18 @@ defmodule RoundTest do
     Round.score(trump, sets)
   end
 
+  def bid_pick_up(hand_codes, card_code, position) do
+    hands = Enum.map hand_codes, fn (hand) ->
+      Enum.map hand, &CardEncoding.code_to_card/1
+    end
+    card = CardEncoding.code_to_card(card_code)
+    {new_hands, new_pos} = Round.bid_pick_up(hands, card, position)
+    new_hand_codes = Enum.map new_hands, fn (hand) ->
+      Enum.map hand, &CardEncoding.card_to_code/1
+    end
+    {new_hand_codes, new_pos}
+  end
+
   test "plays a hand where first player wins all the tricks" do
     result = play_hand("c", [~w(Jc Js Ac Kc Qc), ~w(Ad Kd Qd Jd 10d), ~w(Ah Kh Qh Jh 10h), ~w(As Ks Qs 10s 9s)], 0)
     assert result == [~w(Jc 10d 10h 9s), ~w(Js Jd Jh 10s), ~w(Ac Qd Qh Qs), ~w(Kc Kd Kh Ks), ~w(Qc Ad Ah As)]
@@ -84,5 +96,46 @@ defmodule RoundTest do
     assert length(h4) == 5
     assert length(rem) == 4
     assert length(Enum.uniq(h1 ++ h2 ++ h3 ++ h4 ++ rem)) == 24
+  end
+
+  test "does a pick-up bidding round" do
+    flipped_up_card = "Jh"
+    hand1 = ~w(9d 10d Qd Kd Ad)
+    hand2 = ~w(9c 10c Qc Kc Ac)
+    hand3 = ~w(9s 10s Qs Ks As)
+    # dealer will pick bauer, discard Js
+    hands = [hand1, hand2, hand3, ~w(10h Qh Kh Ah Js)] 
+
+    {new_hands, position} = bid_pick_up(hands, flipped_up_card, 0)
+    assert position == 3 # dealer picked
+    # Js was discarded, Jh added
+    assert new_hands == [hand1, hand2, hand3, ~w(10h Qh Kh Ah Jh)]
+  end
+
+  test "does a pick-up bidding round starting at a non-zero position" do
+    flipped_up_card = "Jh"
+    hand1 = ~w(9d 10d Qd Kd Ad)
+    hand2 = ~w(9c 10c Qc Kc Ac)
+    hand3 = ~w(9s 10s Qs Ks As)
+    # dealer will pick bauer, discard Js
+    hands = [hand3, ~w(10h Qh Kh Ah Js), hand1, hand2] 
+
+    {new_hands, position} = bid_pick_up(hands, flipped_up_card, 2)
+    assert position == 1 # dealer picked
+    # Js was discarded, Jh added
+    assert new_hands == [hand3, ~w(10h Qh Kh Ah Jh), hand1, hand2]
+  end
+
+  test "pick_up bidding returns orig hands and nil bid position if no one bids" do
+    flipped_up_card = "10h"
+    hand1 = ~w(9c Jh Qs Kd Ac)
+    hand2 = ~w(9d Jc Qh Ks Ad)
+    hand3 = ~w(9s 10d Qc Kh As)
+    hand4 = ~w(9h Js Qd Kc Ah)
+    hands = [hand1, hand2, hand3, hand4] 
+
+    {new_hands, position} = bid_pick_up(hands, flipped_up_card, 0)
+    assert position == nil # no one picked
+    assert new_hands == hands
   end
 end

@@ -2,6 +2,12 @@ defmodule Euchre.Ai.DiscardToPickUp do
   alias Euchre.Deck
   alias Euchre.CardFilters
 
+  def replace_card(hand, card) do
+    discarded = discard(hand, card)
+    index = Enum.find_index hand, &(&1 == discarded)
+    List.update_at hand, index, fn (_) -> card end
+  end
+
   def discard(hand, card) do
     discard_non_ace_singleton(hand, card) ||
     discard_lowest_non_trump(hand, card)

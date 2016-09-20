@@ -1,9 +1,30 @@
 defmodule Euchre.Round do
   alias Euchre.Trick
   alias Euchre.Deck
+  alias Euchre.Ai.Bid
+  alias Euchre.Ai.DiscardToPickUp
 
-  def play_hand(trump, hands, lead_position) do
-    play_hand(trump, hands, lead_position, true, [])
+  def bid_pick_up(hands, card, position) do
+    dealer_pos = 3
+    offset_hands = add_offset(hands, position)
+    bid_pos = Enum.find_index offset_hands, fn (hand) ->
+      res = Bid.pick_up(hand, card, position)
+      res == :pick_up
+    end
+    if bid_pos do
+      hands_with_pick_up = List.update_at offset_hands, dealer_pos, fn (_) ->
+        DiscardToPickUp.replace_card(Enum.at(offset_hands, dealer_pos), card)
+      end
+      no_offset_bid_pos = rem(4 - position + bid_pos, 4)
+      {remove_offset(hands_with_pick_up, position), no_offset_bid_pos}
+    else
+      # No one bid on the hand
+      {hands, nil}
+    end
+  end
+
+  def play_hand(trump, hands, lead_position, on_offense \\ true) do
+    play_hand(trump, hands, lead_position, on_offense, [])
   end
 
   defp play_hand(_, [[],[],[],[]], _, _, sets), do: sets
