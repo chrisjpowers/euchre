@@ -6,17 +6,13 @@ defmodule Euchre.Trick do
   def winner(trump, cards) when is_list(cards) and is_nil(trump) == false do
     if length(cards) > 0 do
       {lead_suit, _} = List.first(cards)
-      Enum.max_by cards, fn (card) ->
-        get_value(card, lead_suit, trump)
-      end
+      Enum.max_by cards, &(get_value(&1, lead_suit, trump))
     end
   end
 
   def lowest_card(cards, lead_suit, trump) do
     if !Enum.empty?(cards) do
-      Enum.min_by cards, fn (card) ->
-        get_value(card, lead_suit, trump)
-      end
+      Enum.min_by cards, &(get_value(&1, lead_suit, trump))
     end
   end
 
